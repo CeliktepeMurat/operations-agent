@@ -14,7 +14,8 @@
     "db:migrate": "node --env-file=.env --import tsx src/db/migrate.cli.ts",
     "db:seed": "node --env-file=.env --import tsx db/seed/seed.cli.ts",
     "dev": "node --env-file=.env --watch --import tsx src/server/index.ts",
-    "start": "node --env-file=.env --import tsx src/server/index.ts"
+    "start": "node --env-file=.env --import tsx src/server/index.ts",
+    "chat": "node --env-file=.env --import tsx src/agent/chat.cli.ts"
   },
   "devDependencies": {
     "@types/node": "^24.19.2",

@@ -73,6 +73,7 @@ Node 24 (`.nvmrc`). Copy `.env.example` to `.env` first.
 - `npm run db:seed` — wipe + reseed deterministic fake data (refuses non-local DBs without `--force`)
 - `npm run dev` — run API with auto-restart on file changes (port 3000, `GET /health`)
 - `npm start` — run API without watch
+- `npm run chat -- --customer <id>` — chat with the agent in the terminal as that customer (needs DB + API key)
 - `npm test` — run tests (DB tests need Docker running; each uses a throwaway schema)
 - `npm run typecheck` — TypeScript check, no output
 - `npm run eval` — run eval suite (not yet)
