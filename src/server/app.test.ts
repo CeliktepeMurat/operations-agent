@@ -4,7 +4,13 @@ import { createTestDb, type TestDb } from "../testing/test-db.js";
 import { buildApp } from "./app.js";
 
 // Nothing listens on port 1, so connections fail fast.
-const unreachablePool = () => createPool({ DATABASE_URL: "postgres://x:y@localhost:1/none", PORT: 0 });
+const unreachablePool = () =>
+  createPool({
+    DATABASE_URL: "postgres://x:y@localhost:1/none",
+    PORT: 0,
+    ANTHROPIC_API_KEY: "sk-ant-test",
+    ANTHROPIC_MODEL: "test",
+  });
 
 describe("GET /health", () => {
   let db: TestDb | undefined;
