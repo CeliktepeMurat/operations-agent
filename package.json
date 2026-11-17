@@ -1,0 +1,31 @@
+{
+  "name": "operations-agent",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Customer-support agent with a code-enforced permission layer",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:migrate": "node --env-file=.env --import tsx src/db/migrate.cli.ts",
+    "db:seed": "node --env-file=.env --import tsx db/seed/seed.cli.ts",
+    "dev": "node --env-file=.env --watch --import tsx src/server/index.ts",
+    "start": "node --env-file=.env --import tsx src/server/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/pg": "^8.23.1",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "dependencies": {
+    "fastify": "^5.12.8",
+    "pg": "^8.23.1",
+    "zod": "^4.6.7"
+  }
+}
