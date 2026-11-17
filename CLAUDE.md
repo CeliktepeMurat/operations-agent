@@ -37,6 +37,10 @@ evals/          # scenarios + runner (results judged by DB state, not text)
 docs/           # policy documents, notes, write-up
 ```
 
+Design decisions:
+- `src/api/` functions are plain data access with **no access control** (e.g. `getOrder` returns any order). Ownership and all other rules live only in `src/permissions/`, so the eval can compare "no protection" vs "permission layer".
+- Tools call `src/api/` as in-process functions, not over HTTP. HTTP routes, if needed, wrap the same functions.
+
 Conventions: tests sit next to the code (`x.test.ts`); CLI entry points are `*.cli.ts`; comments are short and only for non-obvious decisions — explanations go in the chat, not the code.
 
 Invariants — never violate these:

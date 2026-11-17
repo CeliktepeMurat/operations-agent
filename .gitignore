@@ -5,3 +5,6 @@ dist/
 .DS_Store
 coverage/
 OperationAgent.pdf
+
+# Local experiments, not part of the project
+playground/
