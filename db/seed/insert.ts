@@ -7,7 +7,7 @@ export async function insertSeedData(pool: pg.Pool, data: SeedData): Promise<voi
   try {
     await client.query("BEGIN");
     await client.query(
-      "TRUNCATE refunds, payments, order_items, orders, products, customers RESTART IDENTITY",
+      "TRUNCATE coupons, refunds, payments, order_items, orders, products, customers RESTART IDENTITY",
     );
 
     const customerIds: number[] = [];
