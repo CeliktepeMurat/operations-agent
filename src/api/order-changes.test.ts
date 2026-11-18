@@ -3,7 +3,7 @@ import { generateSeedData } from "../../db/seed/generate.js";
 import { insertSeedData } from "../../db/seed/insert.js";
 import { runMigrations } from "../db/migrate.js";
 import { createTestDb, type TestDb } from "../testing/test-db.js";
-import { cancelOrder } from "./order-changes.js";
+import { cancelOrder, changeShippingAddress } from "./order-changes.js";
 import { FakePaymentProvider } from "./payments.js";
 import { refundOrder } from "./refunds.js";
 
@@ -99,5 +99,67 @@ describe("cancelOrder", () => {
 
     expect(outcomes.filter((o) => o.ok)).toHaveLength(1);
     expect(payments.totalSentCents()).toBe(PAID_TOTAL);
+  });
+});
+
+describe("changeShippingAddress", () => {
+  const NEW_ADDRESS = { line1: "42 New St", city: "Austin", postalCode: "78702", country: "US" };
+
+  const addressOf = async (orderId: number) =>
+    (
+      await db.pool.query(
+        `SELECT ship_line1 AS "line1", ship_city AS "city", ship_postal_code AS "postalCode", ship_country AS "country"
+           FROM orders WHERE id = $1`,
+        [orderId],
+      )
+    ).rows[0];
+
+  it.each([
+    ["paid", PAID],
+    ["pending", PENDING],
+  ])("updates the address of a %s order", async (_status, orderId) => {
+    expect(await changeShippingAddress(db.pool, orderId, NEW_ADDRESS)).toEqual({ ok: true, address: NEW_ADDRESS });
+    expect(await addressOf(orderId)).toEqual(NEW_ADDRESS);
+  });
+
+  it("trims whitespace from address fields", async () => {
+    const outcome = await changeShippingAddress(db.pool, PAID, { ...NEW_ADDRESS, city: "  Austin  " });
+    expect(outcome).toMatchObject({ ok: true, address: { city: "Austin" } });
+  });
+
+  it.each([
+    ["shipped", SHIPPED],
+    ["delivered", DELIVERED],
+    ["cancelled", CANCELLED],
+  ])("refuses to change a %s order", async (status, orderId) => {
+    const before = await addressOf(orderId);
+
+    const outcome = await changeShippingAddress(db.pool, orderId, NEW_ADDRESS);
+
+    expect(outcome).toEqual({ ok: false, error: `Order ${orderId} is ${status}; its address can no longer be changed` });
+    expect(await addressOf(orderId)).toEqual(before);
+  });
+
+  it("rejects an unknown order", async () => {
+    expect(await changeShippingAddress(db.pool, 999_999, NEW_ADDRESS)).toEqual({
+      ok: false,
+      error: "Order 999999 not found",
+    });
+  });
+
+  it.each([
+    ["an empty field", { ...NEW_ADDRESS, city: "   " }],
+    ["a missing field", { line1: "42 New St", city: "Austin", country: "US" }],
+    ["a bad country code", { ...NEW_ADDRESS, country: "United States" }],
+    ["an extra field", { ...NEW_ADDRESS, customerId: 12 }],
+    ["an overlong field", { ...NEW_ADDRESS, line1: "x".repeat(201) }],
+  ])("rejects %s and changes nothing", async (_case, address) => {
+    const before = await addressOf(PAID);
+
+    const outcome = await changeShippingAddress(db.pool, PAID, address);
+
+    expect(outcome.ok).toBe(false);
+    if (!outcome.ok) expect(outcome.error).toMatch(/^Invalid address/);
+    expect(await addressOf(PAID)).toEqual(before);
   });
 });
